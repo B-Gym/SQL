@@ -1040,3 +1040,364 @@ WHERE Email LIKE '%@%.%'
 3. 데이터베이스 호환성: 정규 표현식 지원은 데이터베이스 시스템마다 다르다. 이식성을 고려해야 한다.
 
 <br><br><br><br>
+
+# 3. 관리 구문
+
+## DML
+
+    DML은 데이터베이스의 데이터를 조작하는 데 사용되는 SQL 명령어의 집합이다. 주로 테이블의 행을 검색, 삽입, 수정, 삭제하는 데 사용된다.
+
+### ✅ 주요 DML 명령어
+
+1. SELECT: 데이터 조회
+2. INSERT: 새 데이터 삽입
+3. UPDATE: 기존 데이터 수정
+4. DELETE: 데이터 삭제
+
+#### 예시 테이블 (Employees):
+
+| EmpID | EmpName | Department | Salary |
+| ----- | ------- | ---------- | ------ |
+| 1     | Alice   | IT         | 60000  |
+| 2     | Bob     | HR         | 55000  |
+| 3     | Charlie | IT         | 65000  |
+
+### 1. SELECT
+
+```sql
+SELECT EmpName, Salary
+FROM Employees
+WHERE Department = 'IT';
+```
+
+결과:
+
+| EmpName | Salary |
+| ------- | ------ |
+| Alice   | 60000  |
+| Charlie | 65000  |
+
+### 2. INSERT
+
+```sql
+INSERT INTO Employees (EmpID, EmpName, Department, Salary)
+VALUES (4, 'David', 'Finance', 70000);
+```
+
+실행 후 Employees 테이블:
+
+| EmpID | EmpName | Department | Salary |
+| ----- | ------- | ---------- | ------ |
+| 1     | Alice   | IT         | 60000  |
+| 2     | Bob     | HR         | 55000  |
+| 3     | Charlie | IT         | 65000  |
+| 4     | David   | Finance    | 70000  |
+
+### 3. UPDATE
+
+```sql
+UPDATE Employees
+SET Salary = Salary * 1.1
+WHERE Department = 'IT';
+```
+
+실행 후 Employees 테이블:
+
+| EmpID | EmpName | Department | Salary |
+| ----- | ------- | ---------- | ------ |
+| 1     | Alice   | IT         | 66000  |
+| 2     | Bob     | HR         | 55000  |
+| 3     | Charlie | IT         | 71500  |
+| 4     | David   | Finance    | 70000  |
+
+### 4. DELETE
+
+```sql
+DELETE FROM Employees
+WHERE EmpID = 4;
+```
+
+실행 후 Employees 테이블:
+
+| EmpID | EmpName | Department | Salary |
+| ----- | ------- | ---------- | ------ |
+| 1     | Alice   | IT         | 66000  |
+| 2     | Bob     | HR         | 55000  |
+| 3     | Charlie | IT         | 71500  |
+
+### ✅ DML 명령어 사용 시 주의사항
+
+1. 트랜잭션 관리: INSERT, UPDATE, DELETE 작업은 데이터를 변경하므로, 적절한 트랜잭션 관리가 필요하다.
+2. 무결성 제약 조건: 데이터 변경 시 테이블의 무결성 제약 조건을 위반하지 않도록 주의해야 한다.
+3. WHERE 절 사용: UPDATE와 DELETE 시 WHERE 절을 생략하면 모든 행에 영향을 미치므로 주의해야 한다.
+4. 대량 데이터 처리: 대량의 데이터를 처리할 때는 성능을 고려해야 한다. 벌크 INSERT나 MERGE 문을 사용할 수 있다.
+5. 서브쿼리 사용: INSERT, UPDATE, DELETE 문에서 서브쿼리를 사용할 수 있다. 이를 통해 복잡한 데이터 조작이 가능하다.
+
+### ✅ Oracle과 SQL Server의 차이점
+
+1. MERGE 문: 두 데이터베이스 시스템 모두 MERGE 문을 지원하지만, 구문에 약간의 차이가 있다.
+2. 반환 값: SQL Server의 INSERT, UPDATE, DELETE 문은 영향받은 행의 수를 반환하지만, Oracle은 별도의 처리가 필요하다.
+3. RETURNING 절: Oracle은 INSERT, UPDATE, DELETE 문에서 RETURNING 절을 사용하여 변경된 데이터를 즉시 조회할 수 있다. SQL Server는 이와 유사한 OUTPUT 절을 제공한다.
+
+## TCL
+
+     데이터베이스의 *트랜잭션을 제어하는 데 사용되는 SQL 명령어의 집합으로 TCL은 데이터의 일관성과 무결성을 유지하는 데 중요한 역할을 한다. 특히 여러 연산이 하나의 논리적 단위로 처리되어야 하는 경우 TCL의 올바른 사용이 필수적이다.
+     *트랜잭션: 데이터베이스의 상태를 변화시키기 위해 수행하는 작업의 단위
+
+### ✅ 주요 TCL 명령어
+
+1. COMMIT: 트랜잭션을 완료하고 변경사항을 영구적으로 저장
+2. ROLLBACK: 트랜잭션을 취소하고 변경사항을 되돌림
+3. SAVEPOINT: 트랜잭션 내에 중간 저장점을 생성
+4. SET TRANSACTION: 트랜잭션의 특성을 설정
+
+### ✅트랜잭션의 특성 (ACID)
+
+- 원자성(Atomicity): 트랜잭션의 모든 연산이 완료되거나 전혀 수행되지 않아야 함
+- 일관성(Consistency): 트랜잭션 완료 후 데이터베이스가 일관된 상태를 유지해야 함
+- 고립성(Isolation): 동시에 실행되는 트랜잭션들이 서로 영향을 미치지 않아야 함
+- 지속성(Durability): 완료된 트랜잭션의 결과는 영구적으로 반영되어야 함
+
+### ✅ TCL 명령어 사용 예시
+
+예시 테이블 (Accounts):
+
+| AccountID | Balance |
+| --------- | ------- |
+| 1         | 1000    |
+| 2         | 2000    |
+
+### 1. COMMIT
+
+```sql
+BEGIN TRANSACTION;
+UPDATE Accounts SET Balance = Balance - 500 WHERE AccountID = 1;
+UPDATE Accounts SET Balance = Balance + 500 WHERE AccountID = 2;
+COMMIT;
+```
+
+실행 후 Accounts 테이블:
+
+| AccountID | Balance |
+| --------- | ------- |
+| 1         | 500     |
+| 2         | 2500    |
+
+COMMIT 실행 후 변경사항이 영구적으로 저장
+
+### 2. ROLLBACK
+
+```sql
+BEGIN TRANSACTION;
+UPDATE Accounts SET Balance = Balance - 1000 WHERE AccountID = 1;
+-- 오류 발생 가정
+ROLLBACK;
+```
+
+ROLLBACK 실행 후 Accounts 테이블은 변경 전 상태로 돌아감
+
+| AccountID | Balance |
+| --------- | ------- |
+| 1         | 500     |
+| 2         | 2500    |
+
+### 3. SAVEPOINT
+
+```sql
+BEGIN TRANSACTION;
+SAVEPOINT sp1;
+UPDATE Accounts SET Balance = Balance - 200 WHERE AccountID = 1;
+SAVEPOINT sp2;
+UPDATE Accounts SET Balance = Balance - 300 WHERE AccountID = 1;
+ROLLBACK TO sp2;
+COMMIT;
+```
+
+실행 후 Accounts 테이블:
+
+| AccountID | Balance |
+| --------- | ------- |
+| 1         | 300     |
+| 2         | 2500    |
+
+sp2로 ROLLBACK하여 두 번째 UPDATE는 취소되고 첫 번째 UPDATE만 적용
+
+### ✅ Oracle과 SQL Server의 차이점
+
+1. 자동 커밋:
+
+   - Oracle: 기본적으로 자동 커밋이 비활성화
+   - SQL Server: 기본적으로 자동 커밋이 활성화
+
+2. SAVEPOINT 구문:
+
+   - Oracle: `SAVEPOINT 세이브포인트명;`
+   - SQL Server: `SAVE TRANSACTION 세이브포인트명;`
+
+3. ROLLBACK TO SAVEPOINT:
+
+   - Oracle: `ROLLBACK TO 세이브포인트명;`
+   - SQL Server: `ROLLBACK TRANSACTION 세이브포인트명;`
+
+4. SET TRANSACTION:
+   - Oracle: 격리 수준과 읽기 전용 모드 설정 가능
+   - SQL Server: 주로 격리 수준 설정에 사용
+
+### ✅ TCL 명령어 사용 시 주의사항
+
+1. 트랜잭션 범위: 트랜잭션의 시작과 끝을 명확히 정의해야 한다.
+2. 락(Lock): 장기 트랜잭션은 데이터베이스 락을 오래 유지할 수 있어 성능에 영향을 줄 수 있다.
+3. 네트워크 문제: 클라이언트와 서버 간 연결이 끊어질 경우 트랜잭션 처리에 주의해야 한다.
+4. 중첩 트랜잭션: 데이터베이스 시스템에 따라 중첩 트랜잭션 지원 여부가 다를 수 있다.
+
+## DDL
+
+    데이터베이스의 구조를 정의하고 관리하는 데 사용되는 SQL 명령어의 집합이다.
+    테이블, 인덱스, 뷰 등의 데이터베이스 객체를 생성, 변경, 삭제하는 데 사용된다.
+
+### ✅ 주요 DDL 명령어
+
+1. CREATE: 새로운 데이터베이스 객체를 생성한다.
+2. ALTER: 기존 데이터베이스 객체의 구조를 변경한다.
+3. DROP: 데이터베이스 객체를 삭제한다.
+4. TRUNCATE: 테이블의 모든 데이터를 삭제한다.
+
+### ✅ DDL 명령어 사용 예시
+
+### 1. CREATE
+
+테이블 생성 예시:
+
+```sql
+CREATE TABLE Employees (
+    EmpID INT PRIMARY KEY,
+    EmpName VARCHAR(50) NOT NULL,
+    Department VARCHAR(50),
+    Salary DECIMAL(10, 2)
+);
+```
+
+이 명령은 Employees라는 새로운 테이블을 생성한다.
+
+### 2. ALTER
+
+테이블 구조 변경 예시:
+
+```sql
+ALTER TABLE Employees
+ADD Email VARCHAR(100);
+```
+
+이 명령은 Employees 테이블에 Email이라는 새로운 열을 추가한다.
+
+### 3. DROP
+
+테이블 삭제 예시:
+
+```sql
+DROP TABLE Employees;
+```
+
+이 명령은 Employees 테이블을 완전히 삭제한다.
+
+### 4. TRUNCATE
+
+테이블 데이터 삭제 예시:
+
+```sql
+TRUNCATE TABLE Employees;
+```
+
+이 명령은 Employees 테이블의 모든 데이터를 삭제하지만, 테이블 구조는 유지한다.
+
+### ✅ Oracle과 SQL Server의 차이점
+
+1. 시퀀스(Sequence) 생성:
+
+   - Oracle: CREATE SEQUENCE 명령을 사용한다.
+   - SQL Server: CREATE SEQUENCE 명령을 지원하지만, IDENTITY 속성을 더 흔히 사용한다.
+
+2. 임시 테이블:
+
+   - Oracle: 전역 임시 테이블은 이름 앞에 'GLOBAL TEMPORARY'를 붙인다.
+   - SQL Server: 임시 테이블 이름 앞에 '#'을 붙인다.
+
+3. 제약조건 이름 지정:
+   - Oracle: 제약조건 이름을 지정하지 않으면 시스템이 자동으로 이름을 생성한다.
+   - SQL Server: 제약조건 이름을 지정하지 않으면 NULL 이름의 제약조건이 생성된다.
+
+### ✅ DDL 명령어 사용 시 주의사항
+
+1. 데이터 손실: DROP이나 TRUNCATE 명령은 데이터를 영구적으로 삭제하므로 주의해야 한다.
+2. 권한: DDL 명령을 실행하려면 적절한 권한이 필요하다.
+3. 트랜잭션: 대부분의 DDL 명령은 자동으로 커밋되며, ROLLBACK할 수 없다.
+4. 성능 영향: 대규모 테이블의 구조를 변경할 때는 성능에 큰 영향을 줄 수 있으므로 주의해야 한다.
+5. 의존성: 다른 객체에 의존하는 객체를 삭제할 때는 의존성을 고려해야 한다.
+
+## DCL
+
+    데이터베이스에 대한 접근 권한과 사용자 권한을 제어하는 데 사용되는 SQL 명령어의 집합이다.
+    데이터베이스 보안, 무결성, 회복, 병행 수행 제어 등을 정의하는 데 사용된다.
+
+### ✅ 주요 DCL 명령어
+
+1. GRANT: 사용자에게 특정 데이터베이스 객체에 대한 권한을 부여한다.
+2. REVOKE: 사용자로부터 특정 데이터베이스 객체에 대한 권한을 회수한다.
+
+### ✅ DCL 명령어 사용 예시
+
+### 1. GRANT
+
+권한 부여 예시:
+
+```sql
+GRANT SELECT, INSERT ON Employees TO user1;
+```
+
+이 명령은 user1에게 Employees 테이블에 대한 SELECT와 INSERT 권한을 부여한다.
+
+### 2. REVOKE
+
+권한 회수 예시:
+
+```sql
+REVOKE INSERT ON Employees FROM user1;
+```
+
+이 명령은 user1로부터 Employees 테이블에 대한 INSERT 권한을 회수한다.
+
+### ✅ 권한의 종류
+
+1. 시스템 권한: 데이터베이스 전체에 대한 권한이다.
+   예: CREATE USER, CREATE TABLE, CREATE VIEW 등
+
+2. 객체 권한: 특정 데이터베이스 객체에 대한 권한이다.
+   예: SELECT, INSERT, UPDATE, DELETE, EXECUTE 등
+
+### ✅ Oracle과 SQL Server의 차이점
+
+1. 역할(Role) 생성:
+
+   - Oracle: CREATE ROLE 명령을 사용한다.
+   - SQL Server: sp_addrole 저장 프로시저를 사용한다.
+
+2. 사용자 생성:
+
+   - Oracle: CREATE USER 명령을 사용한다.
+   - SQL Server: CREATE LOGIN과 CREATE USER 명령을 순차적으로 사용한다.
+
+3. WITH GRANT OPTION:
+   - Oracle: GRANT 명령에 WITH GRANT OPTION을 추가하여 권한 위임이 가능하다.
+   - SQL Server: WITH GRANT OPTION 대신 WITH ADMIN OPTION을 사용한다.
+
+### ✅ DCL 명령어 사용 시 주의사항
+
+1. 최소 권한의 원칙: 사용자에게 필요한 최소한의 권한만 부여해야 한다.
+
+2. 권한 관리: 주기적으로 사용자 권한을 검토하고 불필요한 권한은 회수해야 한다.
+
+3. 역할 사용: 개별 사용자에게 직접 권한을 부여하는 것보다 역할을 통해 권한을 관리하는 것이 효율적이다.
+
+4. 권한 상속: WITH ADMIN OPTION이나 WITH GRANT OPTION을 사용할 때는 권한이 연쇄적으로 부여될 수 있음을 주의해야 한다.
+
+5. 시스템 권한: 시스템 권한을 부여할 때는 특히 신중해야 한다. 잘못 사용될 경우 시스템 전체에 영향을 줄 수 있다.
